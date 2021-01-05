@@ -64,8 +64,6 @@ class Processor:
     def process_tweet_single(self):
         # process template
         text_emoji_parsed = self.process_emoji(self.text["tweet"])
-        emoji_pattern = re.compile(u'[\U00010000-\U0010ffff]')
-        text_emoji_parsed = emoji_pattern.sub('', text_emoji_parsed)
         template = self.template.replace("{T}", text_emoji_parsed)
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
@@ -93,11 +91,11 @@ class Processor:
 
     def process_tweet_retweet(self):
         q_selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-dap0kf.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-15d164r.r-vlx1xi > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-1g94qm0.r-bcqeeo.r-bnwqim.r-qvutc0")'''
-        template = RETWEET_TEMP.replace("{T}", self.text["retweet"])
+        text_emoji_parsed = self.process_emoji(self.text["retweet"])
+        template = RETWEET_TEMP.replace("{T}", text_emoji_parsed)
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
-        ajs = f'''{q_selector}.innerHTML = {q_selector}.innerHTML + '{template}'
-        '''
+        ajs = f'''{q_selector}.innerHTML = {q_selector}.innerHTML + `{template}`'''
         print(ajs)
         self.driver.execute_script(ajs)
 
@@ -109,7 +107,9 @@ class Processor:
             emoji_parsed_html)
         for eve in emoji_list:
             src = src + EMOJI_HTML.replace("{EMOJI}", eve)
-        return src
+        emoji_pattern = re.compile(u'[\U00010000-\U0010ffff]')
+        text_emoji_clear = emoji_pattern.sub('', src)
+        return text_emoji_clear
 
     def modify_tweet(self):
         while self.driver.execute_script(
