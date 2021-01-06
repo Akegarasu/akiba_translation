@@ -85,7 +85,7 @@ class Processor:
         img = Image.open('cache_image.png')
         crop = img.crop((0, 0, 640, int(clip_info['bottom'] + 12)))
         img_name = f'{str(int(time.time()))}_a.png'
-        crop.save(img_name)
+        crop.save("./imgs/" + img_name)
         return img_name
 
     def process_tweet_retweet(self):

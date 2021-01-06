@@ -2,9 +2,11 @@ from flask import Flask, request, jsonify, Response
 import json
 import socks
 import socket
+import os
 import threading
 import tweetProcess
 from utils import template
+from utils import qq_sender
 
 socket.setdefaulttimeout(8)
 
@@ -16,6 +18,10 @@ def handle_cook(src):
     print(src)
     p = tweetProcess.Processor(src)
     name = p.process_tweet()
+    file_path = os.getcwd() + '/imgs/' + name
+    # print(file_path)
+    if "QQ_bot" in src:
+        qq_sender.push(src, name)
     return name
 
 
