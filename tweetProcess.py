@@ -103,12 +103,13 @@ class Processor:
         ajs = twemoji_js.replace("{EMOJI_HTML}", src)
         emoji_parsed_html = self.driver.execute_script(ajs)
         emoji_list = re.findall(
-            '''<img class="emoji" draggable="false" alt=".*" src="https://twemoji.maxcdn.com/v/13.0.1/72x72/(.+?).png"/>''',
+            '''src="https://twemoji.maxcdn.com/v/13.0.1/72x72/(.*?).png"/>''',
             emoji_parsed_html)
+        print(emoji_list)
         for eve in emoji_list:
-            src = src + EMOJI_HTML.replace("{EMOJI}", eve)
+            emoji_parsed_html = re.sub('''<img class="emoji" draggable="false" .*?"/>''', EMOJI_HTML.replace("{EMOJI}", eve), emoji_parsed_html, count=1)
         emoji_pattern = re.compile(u'[\U00010000-\U0010ffff]')
-        text_emoji_clear = emoji_pattern.sub('', src)
+        text_emoji_clear = emoji_pattern.sub('', emoji_parsed_html)
         return text_emoji_clear
 
     def modify_tweet(self):
