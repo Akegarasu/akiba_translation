@@ -21,7 +21,7 @@ def handle_cook(src):
     file_path = os.getcwd() + '/imgs/' + name
     # print(file_path)
     if "QQ_bot" in src:
-        qq_sender.push(src, name)
+        qq_sender.push(src["QQ_bot"], name)
     return name
 
 

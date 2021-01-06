@@ -34,6 +34,6 @@ def push(src, name):
     #         "group_id": "",
     #     }
     # }
-    seen = "[CQ:image,file=file:///%s\\imgs\\%s.png]" % (os.getcwd(), name)
+    seen = "[CQ:image,file=file:///%s\\imgs\\%s]" % (os.getcwd(), name)
     url = f"http://{src['url']}:{src['port']}/send_group_msg?access_token={src['access_token']}&group_id={src['group_id']}&message={seen}"
     push_to_url(url)
