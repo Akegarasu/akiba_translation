@@ -6,8 +6,8 @@ from selenium.webdriver.common.by import By
 import time
 import re
 from PIL import Image
-from template import RETWEET_TEMP
-from twemoji import EMOJI_HTML, twemoji_js
+from utils.template import RETWEET_TEMP
+from utils.twemoji import EMOJI_HTML, twemoji_js
 
 
 class Processor:
