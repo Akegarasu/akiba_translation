@@ -98,7 +98,7 @@ class Processor:
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
         ajs = f'''{q_selector}.innerHTML = {q_selector}.innerHTML + `{template}`'''
-        print(ajs)
+        # print(ajs)
         self.driver.execute_script(ajs)
 
     def process_emoji(self, src):
