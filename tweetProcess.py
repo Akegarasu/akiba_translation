@@ -7,7 +7,7 @@ import time
 import re
 from PIL import Image
 from utils.template import RETWEET_TEMP
-from utils.twemoji import EMOJI_HTML, twemoji_js
+from utils.twemoji import EMOJI_HTML, TWEET_EMOJI_JS
 
 
 class Processor:
@@ -102,7 +102,7 @@ class Processor:
         self.driver.execute_script(ajs)
 
     def process_emoji(self, src):
-        ajs = twemoji_js.replace("{EMOJI_HTML}", src)
+        ajs = TWEET_EMOJI_JS.replace("{EMOJI_HTML}", src)
         emoji_parsed_html = self.driver.execute_script(ajs)
         emoji_list = re.findall(
             '''src="https://twemoji.maxcdn.com/v/13.0.1/72x72/(.*?).png"/>''',

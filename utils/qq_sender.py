@@ -18,7 +18,7 @@ def push_to_url(url):
 
 
 def push(src, name):
-    # src = {
+    # orig_src = {
     #     "proxy": "socks5://127.0.0.1:10808",
     #     "template_name": "akiba_temp",
     #     "link": "https://twitter.com/houshoumarine/status/1346429093319827456",
