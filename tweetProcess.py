@@ -115,7 +115,7 @@ class Processor:
             else:
                 tweet_sele = 4
 
-            src = c["text"]["tweet"][i]
+            src = self.text["tweet"][i]
             stxt = self.process_text(src)
             text_emoji_parsed = self.process_emoji(stxt)
             template = RETWEET_TEMP.replace("{T}", text_emoji_parsed).replace("\n", "<br>").replace("\\n", "<br>")
