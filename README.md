@@ -1,3 +1,4 @@
+![akiba_translation](https://socialify.git.ci/Akegarasu/akiba_translation/image?description=1&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Brick%20Wall&pulls=1&stargazers=1&theme=Light)
 # akiba_translation
 基于selenium的一个新式烤推机  
 ~~鸽到放假（bushi）~~  
