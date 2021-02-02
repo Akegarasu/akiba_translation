@@ -32,7 +32,7 @@ class Processor:
             '--disable-dev-shm-usage',
             '--disable-gpu',
         ]
-        if self.proxy:
+        if "proxy" in locals():
             argument_list.append(f'--proxy-server={self.proxy}')
         for arg in argument_list:
             self.ops.add_argument(arg)
