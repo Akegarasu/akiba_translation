@@ -1,0 +1,1 @@
+celery -A manager worker --loglevel debug
