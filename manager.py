@@ -2,8 +2,8 @@ import tweetProcess
 from utils import template
 from celery import Celery
 
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/1'
 celery = Celery("api", broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 
 
