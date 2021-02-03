@@ -23,4 +23,4 @@ def get_task_result(task_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=9090)
+    app.run(port=9090)
