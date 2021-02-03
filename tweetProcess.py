@@ -6,41 +6,42 @@ from selenium.webdriver.common.by import By
 import time
 import re
 from PIL import Image
+
+from config import PROXY
 from utils.template import RETWEET_TEMP
 from utils.twemoji import EMOJI_HTML, TWEET_EMOJI_JS
 
 
 class Processor:
     def __init__(self, cfg):
-        self.ops = webdriver.ChromeOptions()
-        self.link = cfg['link']
-        self.type = cfg['type']
-        self.html_template = cfg['template']['html']
-        self.icon_b64 = cfg['template']['icon_b64']
+        self.options = webdriver.ChromeOptions()
+        self.link: str = cfg['link']
+        self.type: str = cfg['type']
+        self.html_template: str = cfg['template']['html']
+        self.icon_b64: str = cfg['template']['icon_b64']
         self.text: dict = cfg['text']
-        if "proxy" in cfg:
-            self.proxy = cfg['proxy']
 
         self.init_argument()
-        self.driver = webdriver.Chrome(chrome_options=self.ops)
+        self.driver = webdriver.Chrome(chrome_options=self.options)
         self.init_webdriver()
 
     def init_argument(self):
         argument_list = [
-            '--headless',
+            # '--headless',
             '--no-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
         ]
-        if "proxy" in locals():
-            argument_list.append(f'--proxy-server={self.proxy}')
+        if PROXY:
+            argument_list.append(f'--proxy-server={PROXY}')
+
         for arg in argument_list:
-            self.ops.add_argument(arg)
+            self.options.add_argument(arg)
 
     def init_webdriver(self):
         self.driver.delete_all_cookies()
 
-    def process_tweet(self):
+    def process_tweet(self) -> str:
         img_name = ""
         self.driver.get(self.link)
         WebDriverWait(self.driver, 60, 0.1).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'article')))
@@ -58,7 +59,10 @@ class Processor:
         self.driver.close()
         return img_name
 
-    def save_screenshot(self):
+    def save_screenshot(self) -> str:
+        """
+        :return: 截图名称
+        """
         # modify tweet
         self.driver.set_window_size(640, self.driver.execute_script('''
         return document.querySelector("section").getBoundingClientRect().bottom
@@ -88,7 +92,8 @@ class Processor:
         self.driver.execute_script(f'''
             document.querySelector(".css-1dbjc4n.r-156q2ks").innerHTML += `{template}`
             ''')
-        return self.save_screenshot()
+        img_name = self.save_screenshot()
+        return img_name
 
     def process_tweet_retweet(self):
         selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-dap0kf.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-15d164r.r-vlx1xi > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-1g94qm0.r-bcqeeo.r-bnwqim.r-qvutc0")'''
@@ -119,7 +124,8 @@ class Processor:
                 nodes[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML += `{template}`;
             ''')
 
-        return self.save_screenshot()
+        img_name = self.save_screenshot()
+        return img_name
 
     def process_emoji(self, src):
         js = TWEET_EMOJI_JS.replace("{EMOJI_HTML}", src)
