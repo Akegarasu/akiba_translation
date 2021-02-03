@@ -27,7 +27,7 @@ class Processor:
 
     def init_argument(self):
         argument_list = [
-            # '--headless',
+            '--headless',
             '--no-sandbox',
             '--disable-dev-shm-usage',
             '--disable-gpu',
@@ -65,13 +65,11 @@ class Processor:
         """
         # modify tweet
         self.driver.set_window_size(640, self.driver.execute_script('''
-        return document.querySelector("section").getBoundingClientRect().bottom
-        '''))
+        return document.querySelector("section").getBoundingClientRect().bottom'''))
         self.modify_tweet()
         # save and clip tweet image
         clip_info = self.driver.execute_script('''
-        return document.querySelector("article .css-1dbjc4n .r-vpgt9t").getBoundingClientRect();
-        ''')
+        return document.querySelector("article .css-1dbjc4n .r-vpgt9t").getBoundingClientRect();''')
         self.driver.save_screenshot(
             f'cache_image.png')
         img = Image.open('cache_image.png')
@@ -83,15 +81,13 @@ class Processor:
     def process_tweet_single(self):
         # process template
         text_ok = self.process_text(self.text["tweet"])
-        text_emoji_parsed = self.process_emoji(text_ok)
-        template = self.html_template.replace("{T}", text_emoji_parsed)
+        template = self.html_template.replace("{T}", text_ok)
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
         # execute js
         print("execute tweet_single js")
         self.driver.execute_script(f'''
-            document.querySelector(".css-1dbjc4n.r-156q2ks").innerHTML += `{template}`
-            ''')
+            document.querySelector(".css-1dbjc4n.r-156q2ks").innerHTML += `{template}`''')
         img_name = self.save_screenshot()
         return img_name
 
@@ -102,8 +98,7 @@ class Processor:
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
         self.driver.execute_script(
-            f'''{selector}.innerHTML += `{template}`'''
-        )
+            f'''{selector}.innerHTML += `{template}`''')
 
     def process_tweet_reply(self):
         assert isinstance(self.text["tweet"], list)
@@ -121,8 +116,7 @@ class Processor:
             self.driver.execute_script(
                 f'''
                 let nodes = [...document.querySelectorAll("article")];
-                nodes[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML += `{template}`;
-            ''')
+                nodes[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML += `{template}`;''')
 
         img_name = self.save_screenshot()
         return img_name
