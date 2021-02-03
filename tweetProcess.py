@@ -44,23 +44,17 @@ class Processor:
         img_name = ""
         self.driver.get(self.link)
         WebDriverWait(self.driver, 60, 0.1).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'article')))
-
-        if self.type == "single":
-            try:
+        try:
+            if self.type == "single":
                 img_name = self.process_tweet_single()
-            except Exception as e:
-                print(repr(e))
-        if self.type == "retweet":
-            try:
+            if self.type == "retweet":
                 self.process_tweet_retweet()
                 img_name = self.process_tweet_single()
-            except Exception as e:
-                print(repr(e))
-        if self.type == "reply":
-            try:
+            if self.type == "reply":
                 img_name = self.process_tweet_reply()
-            except Exception as e:
-                print(repr(e))
+        except Exception as e:
+            print(repr(e))
+
         self.driver.close()
         return img_name
 
@@ -84,28 +78,27 @@ class Processor:
 
     def process_tweet_single(self):
         # process template
-        stxt = self.process_text(self.text["tweet"])
-        text_emoji_parsed = self.process_emoji(stxt)
-        template = self.html_template.replace("{T}", text_emoji_parsed).replace("\n", "<br>").replace("\\n", "<br>")
+        text_ok = self.process_text(self.text["tweet"])
+        text_emoji_parsed = self.process_emoji(text_ok)
+        template = self.html_template.replace("{T}", text_emoji_parsed)
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
         # execute js
-        ajs = '''document.querySelector(".css-1dbjc4n.r-156q2ks").innerHTML = document.querySelector(".css-1dbjc4n.r-156q2ks").innerHTML + `{HTML}` ''' \
-            .replace("{HTML}", template)
-        self.driver.execute_script(ajs)
         print("execute tweet_single js")
+        self.driver.execute_script(f'''
+            document.querySelector(".css-1dbjc4n.r-156q2ks").innerHTML += `{template}`
+            ''')
         return self.save_screenshot()
 
     def process_tweet_retweet(self):
-        q_selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-dap0kf.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-15d164r.r-vlx1xi > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-1g94qm0.r-bcqeeo.r-bnwqim.r-qvutc0")'''
-        stxt = self.process_text(self.text["retweet"])
-        text_emoji_parsed = self.process_emoji(stxt)
-        template = RETWEET_TEMP.replace("{T}", text_emoji_parsed).replace("\n", "<br>").replace("\\n", "<br>")
+        selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-dap0kf.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-15d164r.r-vlx1xi > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-1g94qm0.r-bcqeeo.r-bnwqim.r-qvutc0")'''
+        text_ok = self.process_text(self.text["retweet"])
+        template = RETWEET_TEMP.replace("{T}", text_ok)
         if "KT_IMG" in template:
             template = template.replace("{KT_IMG}", self.icon_b64)
-        ajs = f'''{q_selector}.innerHTML = {q_selector}.innerHTML + `{template}`'''
-        # print(ajs)
-        self.driver.execute_script(ajs)
+        self.driver.execute_script(
+            f'''{selector}.innerHTML += `{template}`'''
+        )
 
     def process_tweet_reply(self):
         assert isinstance(self.text["tweet"], list)
@@ -116,18 +109,21 @@ class Processor:
                 tweet_sele = 4
 
             src = self.text["tweet"][i]
-            stxt = self.process_text(src)
-            text_emoji_parsed = self.process_emoji(stxt)
-            template = RETWEET_TEMP.replace("{T}", text_emoji_parsed).replace("\n", "<br>").replace("\\n", "<br>")
+            text_ok = self.process_text(src)
+            template = RETWEET_TEMP.replace("{T}", text_ok)
             if "KT_IMG" in template:
                 template = template.replace("{KT_IMG}", self.icon_b64)
-            cjs = f'''let doms = [...document.querySelectorAll("article")];let inner_html = doms[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML;doms[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML = inner_html + `{template}`;'''
-            self.driver.execute_script(cjs)
+            self.driver.execute_script(
+                f'''
+                let nodes = [...document.querySelectorAll("article")];
+                nodes[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML += `{template}`;
+            ''')
+
         return self.save_screenshot()
 
     def process_emoji(self, src):
-        ajs = TWEET_EMOJI_JS.replace("{EMOJI_HTML}", src)
-        emoji_parsed_html = self.driver.execute_script(ajs)
+        js = TWEET_EMOJI_JS.replace("{EMOJI_HTML}", src)
+        emoji_parsed_html = self.driver.execute_script(js)
         emoji_list = re.findall(
             '''src="https://twemoji.maxcdn.com/v/13.0.1/72x72/(.*?).png"/>''',
             emoji_parsed_html)
@@ -139,14 +135,13 @@ class Processor:
         text_emoji_clear = emoji_pattern.sub('', emoji_parsed_html)
         return text_emoji_clear
 
-    @staticmethod
-    def process_text(src):
+    def process_text(self, src):
         if "\r\n" in src:
-            return src.replace("\r\n", "\\n")
+            return self.process_emoji(src.replace("\r\n", "<br>"))
         elif "\n" in src and "\\n" not in src:
-            return src.replace("\n", "\\n")
+            return self.process_emoji(src.replace("\n", "<br>"))
         else:
-            return src
+            return self.process_emoji(src)
 
     def modify_tweet(self):
         while self.driver.execute_script(
