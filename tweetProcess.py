@@ -137,7 +137,7 @@ class Processor:
 
     def process_text(self, src):
         if "\r\n" in src:
-            return self.process_emoji(src.replace("\r\n", "<br>"))
+            return self.process_emoji(src.replace("\r\n", "<br>").replace("\n", "<br>"))
         elif "\n" in src and "\\n" not in src:
             return self.process_emoji(src.replace("\n", "<br>"))
         else:
