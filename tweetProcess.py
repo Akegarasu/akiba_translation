@@ -103,14 +103,16 @@ class Processor:
     def process_tweet_reply(self):
         assert isinstance(self.text["tweet"], list)
         for i in range(len(self.text["tweet"])):
-            if i == len(self.text["tweet"]) - 1:
-                tweet_sele = 3
-            else:
-                tweet_sele = 4
-
             src = self.text["tweet"][i]
             text_ok = self.process_text(src)
-            template = RETWEET_TEMP.replace("{T}", text_ok)
+
+            if i == len(self.text["tweet"]) - 1:
+                tweet_sele = 3
+                template = self.html_template.replace("{T}", text_ok)
+            else:
+                tweet_sele = 4
+                template = RETWEET_TEMP.replace("{T}", text_ok)
+
             if "KT_IMG" in template:
                 template = template.replace("{KT_IMG}", self.icon_b64)
             self.driver.execute_script(
