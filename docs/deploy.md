@@ -80,17 +80,17 @@ python3 -m pipenv run pip install gunicorn
 ```bash
 screen -S api_run
 cd akiba_translation
-./api_run.sh
+python3 -m pipenv run ./api_run.sh
 
 按下 ctrl+A+d
 screen -S cel_run
 cd akiba_translation
-./cel_run.sh
+python3 -m pipenv run ./cel_run.sh
 ```
 - 在上述部分安装好了npm、pm2的
 ```bash
-pm2 start api_run.sh
-pm2 start cel_run.sh
+python3 -m pipenv run pm2 start api_run.sh
+python3 -m pipenv run pm2 start cel_run.sh
 pm2 save
 ```
 
