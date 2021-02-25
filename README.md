@@ -1,4 +1,4 @@
-![akiba_translation](https://socialify.git.ci/Akegarasu/akiba_translation/image?description=1&font=Inter&forks=1&issues=1&language=1&owner=1&pattern=Brick%20Wall&pulls=1&stargazers=1&theme=Light)
+![akiba_translation](https://socialify.git.ci/Akegarasu/akiba_translation/image?description=1&forks=1&issues=1&language=1&logo=https%3A%2F%2Fs3.ax1x.com%2F2021%2F02%2F25%2FyvLBJe.png&owner=1&pulls=1&stargazers=1&theme=Light)
 # akiba_translation
 
 基于selenium的一个新式烤推机  
