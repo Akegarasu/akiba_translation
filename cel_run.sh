@@ -1,1 +1,1 @@
-celery -A manager worker --loglevel debug
+celery -A akiba_translation.manager.celery worker --loglevel debug
