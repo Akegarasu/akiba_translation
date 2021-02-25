@@ -1,1 +1,1 @@
-python3 webapi.py
+python3 ./akiba_translation/main.py
