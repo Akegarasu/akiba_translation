@@ -12,6 +12,25 @@ from utils.template import RETWEET_TEMP
 from utils.twemoji import EMOJI_HTML, TWEET_EMOJI_JS
 
 
+def process_link(src: str) -> str:
+    link_pattern = "(https?:\/\/[^ \n]+)"
+    oth_pattern = "(^@[^ \n]+|\n@[^ \n]+| @[^ \n]+|^#[^ \n]*[^1234567890 \n][^ \n]*|\n#[^ \n]*[^1234567890 \n][^ \n]*| #[^ \n]*[^1234567890 \n][^ \n]*)"
+    cache = src
+    r = re.findall(link_pattern, src)
+    if r:
+        for i in r:
+            if len(i) >= 25:
+                shorted = i[:25] + "..."
+            else:
+                shorted = i
+            cache = re.sub(i, f"<span class='link'>{shorted}</span>", cache, count=1)
+    p = re.findall(oth_pattern, src)
+    if p:
+        for i in p:
+            cache = re.sub(i, f"<span class='link'>{i}</span>", cache, count=1)
+    return cache
+
+
 class Processor:
     def __init__(self, cfg):
         self.options = webdriver.ChromeOptions()
@@ -138,12 +157,14 @@ class Processor:
         return text_emoji_clear
 
     def process_text(self, src):
+        src = process_link(src)
         if "\r\n" in src:
-            return self.process_emoji(src.replace("\r\n", "<br>").replace("\n", "<br>"))
+            ok = src.replace("\r\n", "<br>").replace("\n", "<br>")
         elif "\n" in src and "\\n" not in src:
-            return self.process_emoji(src.replace("\n", "<br>"))
+            ok = src.replace("\n", "<br>")
         else:
-            return self.process_emoji(src)
+            ok = src
+        return self.process_emoji(ok)
 
     def modify_tweet(self):
         while self.driver.execute_script(
