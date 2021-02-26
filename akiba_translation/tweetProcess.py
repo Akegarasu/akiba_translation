@@ -34,11 +34,11 @@ def process_link(src: str) -> str:
 class Processor:
     def __init__(self, cfg):
         self.options = webdriver.ChromeOptions()
-        self.link: str = cfg['link']
-        self.type: str = cfg['type']
-        self.html_template: str = cfg['template']['html']
-        self.icon_b64: str = cfg['template']['icon_b64']
-        self.text: dict = cfg['text']
+        self.link: str = cfg["link"]
+        self.type: str = cfg["type"]
+        self.html_template: str = cfg["template"]["html"]
+        self.icon_b64: str = cfg["template"]["icon_b64"]
+        self.text: dict = cfg["text"]
 
         self.init_argument()
         self.driver = webdriver.Chrome(chrome_options=self.options)
@@ -46,13 +46,13 @@ class Processor:
 
     def init_argument(self):
         argument_list = [
-            '--headless',
-            '--no-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-gpu',
+            "--headless",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
         ]
         if PROXY:
-            argument_list.append(f'--proxy-server={PROXY}')
+            argument_list.append(f"--proxy-server={PROXY}")
 
         for arg in argument_list:
             self.options.add_argument(arg)
@@ -63,14 +63,15 @@ class Processor:
     def process_tweet(self) -> str:
         img_name = ""
         self.driver.get(self.link)
-        WebDriverWait(self.driver, 60, 0.1).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'article')))
+        WebDriverWait(self.driver, 60, 0.1).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "article")))
         try:
             if self.type == "single":
                 img_name = self.process_tweet_single()
-            if self.type == "retweet":
+            elif self.type == "retweet":
                 self.process_tweet_retweet()
                 img_name = self.process_tweet_single()
-            if self.type == "reply":
+            elif self.type == "reply":
                 img_name = self.process_tweet_reply()
         except Exception as e:
             print(repr(e))
@@ -90,34 +91,32 @@ class Processor:
         clip_info = self.driver.execute_script('''
         return document.querySelector("article .css-1dbjc4n.r-1r5su4o").getBoundingClientRect();''')
         self.driver.save_screenshot(
-            f'cache_image.png')
-        img = Image.open('cache_image.png')
-        crop = img.crop((0, 0, 640, int(clip_info['bottom'] + 14)))
-        img_name = f'{str(int(time.time()))}_a.png'
+            f"cache_image.png")
+        img = Image.open("cache_image.png")
+        crop = img.crop((0, 0, 640, int(clip_info["bottom"] + 14)))
+        img_name = f"{str(int(time.time()))}_a.png"
         crop.save("./imgs/" + img_name)
         return img_name
 
     def process_tweet_single(self) -> str:
         # process template
         text_ok = self.process_text(self.text["tweet"])
-        template = self.html_template.replace("{T}", text_ok)
-        if "KT_IMG" in template:
-            template = template.replace("{KT_IMG}", self.icon_b64)
+        template = self.html_template.replace("{T}", text_ok).replace("{KT_IMG}", self.icon_b64)
         # execute js
         print("execute tweet_single js")
-        self.driver.execute_script(f'''
-            document.querySelector(".css-1dbjc4n.r-1s2bzr4").innerHTML += `{template}`''')
+        self.driver.execute_script(
+            f'''document.querySelector(".css-1dbjc4n.r-1s2bzr4").innerHTML += `{template}`'''
+        )
         img_name = self.save_screenshot()
         return img_name
 
-    def process_tweet_retweet(self)-> None:
+    def process_tweet_retweet(self) -> None:
         selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-adacv.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-6gpygo.r-1fz3rvf > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-14gqq1x.r-bcqeeo.r-bnwqim.r-qvutc0")'''
         text_ok = self.process_text(self.text["retweet"])
-        template = RETWEET_TEMP.replace("{T}", text_ok)
-        if "KT_IMG" in template:
-            template = template.replace("{KT_IMG}", self.icon_b64)
+        template = RETWEET_TEMP.replace("{T}", text_ok).replace("{KT_IMG}", self.icon_b64)
         self.driver.execute_script(
-            f'''{selector}.innerHTML += `{template}`''')
+            f'''{selector}.innerHTML += `{template}`'''
+        )
 
     def process_tweet_reply(self) -> str:
         assert isinstance(self.text["tweet"], list)
@@ -126,10 +125,10 @@ class Processor:
             text_ok = self.process_text(src)
 
             if i == len(self.text["tweet"]) - 1:
-                tweet_sele = 3
+                selector_count = 3
                 template = self.html_template.replace("{T}", text_ok)
             else:
-                tweet_sele = 4
+                selector_count = 4
                 template = RETWEET_TEMP.replace("{T}", text_ok)
 
             if "KT_IMG" in template:
@@ -137,7 +136,8 @@ class Processor:
             self.driver.execute_script(
                 f'''
                 let nodes = [...document.querySelectorAll("article")];
-                nodes[{i}].querySelectorAll('[dir="auto"]')[{tweet_sele}].innerHTML += `{template}`;''')
+                nodes[{i}].querySelectorAll('[dir="auto"]')[{selector_count}].innerHTML += `{template}`;'''
+            )
 
         img_name = self.save_screenshot()
         return img_name
@@ -152,8 +152,8 @@ class Processor:
         for eve in emoji_list:
             emoji_parsed_html = re.sub('''<img class="emoji" draggable="false" .*?"/>''',
                                        EMOJI_HTML.replace("{EMOJI}", eve), emoji_parsed_html, count=1)
-        emoji_pattern = re.compile(u'[\U00010000-\U0010ffff]')
-        text_emoji_clear = emoji_pattern.sub('', emoji_parsed_html)
+        emoji_pattern = re.compile(u"[\U00010000-\U0010ffff]")
+        text_emoji_clear = emoji_pattern.sub("", emoji_parsed_html)
         return text_emoji_clear
 
     def process_text(self, src) -> str:
