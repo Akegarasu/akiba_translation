@@ -97,7 +97,7 @@ class Processor:
         crop.save("./imgs/" + img_name)
         return img_name
 
-    def process_tweet_single(self):
+    def process_tweet_single(self) -> str:
         # process template
         text_ok = self.process_text(self.text["tweet"])
         template = self.html_template.replace("{T}", text_ok)
@@ -110,7 +110,7 @@ class Processor:
         img_name = self.save_screenshot()
         return img_name
 
-    def process_tweet_retweet(self):
+    def process_tweet_retweet(self)-> None:
         selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-adacv.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-6gpygo.r-1fz3rvf > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-14gqq1x.r-bcqeeo.r-bnwqim.r-qvutc0")'''
         text_ok = self.process_text(self.text["retweet"])
         template = RETWEET_TEMP.replace("{T}", text_ok)
@@ -119,7 +119,7 @@ class Processor:
         self.driver.execute_script(
             f'''{selector}.innerHTML += `{template}`''')
 
-    def process_tweet_reply(self):
+    def process_tweet_reply(self) -> str:
         assert isinstance(self.text["tweet"], list)
         for i in range(len(self.text["tweet"])):
             src = self.text["tweet"][i]
@@ -142,7 +142,7 @@ class Processor:
         img_name = self.save_screenshot()
         return img_name
 
-    def process_emoji(self, src):
+    def process_emoji(self, src) -> str:
         js = TWEET_EMOJI_JS.replace("{EMOJI_HTML}", src)
         emoji_parsed_html = self.driver.execute_script(js)
         emoji_list = re.findall(
@@ -156,7 +156,7 @@ class Processor:
         text_emoji_clear = emoji_pattern.sub('', emoji_parsed_html)
         return text_emoji_clear
 
-    def process_text(self, src):
+    def process_text(self, src) -> str:
         src = process_link(src)
         if "\r\n" in src:
             ok = src.replace("\r\n", "<br>").replace("\n", "<br>")
@@ -166,7 +166,7 @@ class Processor:
             ok = src
         return self.process_emoji(ok)
 
-    def modify_tweet(self):
+    def modify_tweet(self) -> None:
         while self.driver.execute_script(
                 '''
                 let top=0;
