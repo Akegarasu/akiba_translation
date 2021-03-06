@@ -23,6 +23,10 @@
 
 若有发现 bug 、以及建议欢迎在 issue 中提问，也欢迎 pr
 
+
+### 效果展示
+<img src="https://i.loli.net/2021/03/06/nRigC8PksdNXA2u.png"  width="300" height="650" alt="效果展示">
+
 ### 食用方法
 
 ### 第一步：部署
