@@ -10,25 +10,7 @@ from PIL import Image
 from config import PROXY
 from utils.template import RETWEET_TEMP
 from utils.twemoji import EMOJI_HTML, TWEET_EMOJI_JS
-
-
-def process_link(src: str) -> str:
-    link_pattern = "(https?:\/\/[^ \n]+)"
-    oth_pattern = "(^@[^ \n]+|\n@[^ \n]+| @[^ \n]+|^#[^ \n]*[^1234567890 \n][^ \n]*|\n#[^ \n]*[^1234567890 \n][^ \n]*| #[^ \n]*[^1234567890 \n][^ \n]*)"
-    cache = src
-    r = re.findall(link_pattern, src)
-    if r:
-        for i in r:
-            if len(i) >= 25:
-                shorted = i[:25] + "..."
-            else:
-                shorted = i
-            cache = re.sub(i, f"<span class='link'>{shorted}</span>", cache, count=1)
-    p = re.findall(oth_pattern, src)
-    if p:
-        for i in p:
-            cache = re.sub(i, f"<span class='link'>{i}</span>", cache, count=1)
-    return cache
+from utils.selector import TWEET_SELECTOR, RETWEET_SELECTOR
 
 
 class Processor:
@@ -84,14 +66,17 @@ class Processor:
         :return: 截图名称
         """
         # modify tweet
-        self.driver.set_window_size(640, self.driver.execute_script('''
-        return document.querySelector("section").getBoundingClientRect().bottom'''))
+        self.driver.set_window_size(640, self.driver.execute_script(
+            '''return document.querySelector("section").getBoundingClientRect().bottom'''
+        ))
         self.modify_tweet()
         # save and clip tweet image
-        clip_info = self.driver.execute_script('''
-        return document.querySelector("article .css-1dbjc4n.r-1r5su4o").getBoundingClientRect();''')
+        clip_info = self.driver.execute_script(
+            '''return document.querySelector("article .css-1dbjc4n.r-1r5su4o").getBoundingClientRect();'''
+        )
         self.driver.save_screenshot(
-            f"cache_image.png")
+            f"cache_image.png"
+        )
         img = Image.open("cache_image.png")
         crop = img.crop((0, 0, 640, int(clip_info["bottom"] + 14)))
         img_name = f"{str(int(time.time()))}_a.png"
@@ -99,23 +84,26 @@ class Processor:
         return img_name
 
     def process_tweet_single(self) -> str:
+        """
+        烤制单条普通推特
+        :return: 截图名称
+        """
         # process template
         text_ok = self.process_text(self.text["tweet"])
         template = self.html_template.replace("{T}", text_ok).replace("{KT_IMG}", self.icon_b64)
         # execute js
         print("execute tweet_single js")
         self.driver.execute_script(
-            f'''document.querySelector(".css-1dbjc4n.r-1s2bzr4").innerHTML += `{template}`'''
+            f'''{TWEET_SELECTOR}.innerHTML += `{template}`'''
         )
         img_name = self.save_screenshot()
         return img_name
 
     def process_tweet_retweet(self) -> None:
-        selector = '''document.querySelector("#react-root > div > div > div.css-1dbjc4n.r-18u37iz.r-13qz1uu.r-417010 > main > div > div > div > div.css-1dbjc4n.r-14lw9ot.r-1gm7m50.r-1ljd8xs.r-13l2t4g.r-1phboty.r-1jgb5lz.r-11wrixw.r-61z16t.r-1ye8kvj.r-13qz1uu.r-184en5c > div > div:nth-child(2) > div > section > div > div > div:nth-child(1) > div > div > article > div > div > div > div:nth-child(3) > div:nth-child(2) > div > div > div > div.css-1dbjc4n.r-1bs4hfb.r-1867qdf.r-rs99b7.r-1loqt21.r-adacv.r-1ny4l3l.r-1udh08x.r-o7ynqc.r-6416eg > div > div.css-1dbjc4n.r-6gpygo.r-1fz3rvf > div.css-901oao.r-18jsvk2.r-1tl8opc.r-a023e6.r-16dba41.r-ad9z0x.r-14gqq1x.r-bcqeeo.r-bnwqim.r-qvutc0")'''
         text_ok = self.process_text(self.text["retweet"])
         template = RETWEET_TEMP.replace("{T}", text_ok).replace("{KT_IMG}", self.icon_b64)
         self.driver.execute_script(
-            f'''{selector}.innerHTML += `{template}`'''
+            f'''{RETWEET_SELECTOR}.innerHTML += `{template}`'''
         )
 
     def process_tweet_reply(self) -> str:
@@ -157,7 +145,7 @@ class Processor:
         return text_emoji_clear
 
     def process_text(self, src) -> str:
-        src = process_link(src)
+        src = self.process_link(src)
         if "\r\n" in src:
             ok = src.replace("\r\n", "<br>").replace("\n", "<br>")
         elif "\n" in src and "\\n" not in src:
@@ -165,6 +153,25 @@ class Processor:
         else:
             ok = src
         return self.process_emoji(ok)
+
+    @staticmethod
+    def process_link(src: str) -> str:
+        link_pattern = "(https?:\/\/[^ \n]+)"
+        oth_pattern = "(^@[^ \n]+|\n@[^ \n]+| @[^ \n]+|^#[^ \n]*[^1234567890 \n][^ \n]*|\n#[^ \n]*[^1234567890 \n][^ \n]*| #[^ \n]*[^1234567890 \n][^ \n]*)"
+        cache = src
+        r = re.findall(link_pattern, src)
+        if r:
+            for i in r:
+                if len(i) >= 25:
+                    shorted = i[:25] + "..."
+                else:
+                    shorted = i
+                cache = re.sub(i, f"<span class='link'>{shorted}</span>", cache, count=1)
+        p = re.findall(oth_pattern, src)
+        if p:
+            for i in p:
+                cache = re.sub(i, f"<span class='link'>{i}</span>", cache, count=1)
+        return cache
 
     def modify_tweet(self) -> None:
         while self.driver.execute_script(
