@@ -10,7 +10,7 @@ from PIL import Image
 from config import PROXY
 from utils.template import RETWEET_TEMP
 from utils.twemoji import EMOJI_HTML, TWEET_EMOJI_JS
-from utils.selector import TWEET_SELECTOR, RETWEET_SELECTOR, RETWEET_WITH_REPLY_SELECTOR
+from utils.selector import TWEET_SELECTOR, RETWEET_SELECTOR
 
 
 class Processor:
@@ -51,12 +51,12 @@ class Processor:
             if self.type == "single":
                 img_name = self.process_tweet_single()
             elif self.type == "retweet":
-                self.process_tweet_retweet(with_reply=False)
+                self.process_tweet_retweet()
                 img_name = self.process_tweet_single()
             elif self.type == "reply":
                 img_name = self.process_tweet_reply()
             elif self.type == "retweet|reply":
-                self.process_tweet_retweet(with_reply=True)
+                self.process_tweet_retweet()
                 img_name = self.process_tweet_reply()
         except Exception as e:
             print(repr(e))
@@ -102,13 +102,10 @@ class Processor:
         img_name = self.save_screenshot()
         return img_name
 
-    def process_tweet_retweet(self, with_reply: bool) -> None:
+    def process_tweet_retweet(self) -> None:
         text_ok = self.process_text(self.text["retweet"])
         template = RETWEET_TEMP.replace("{T}", text_ok).replace("{KT_IMG}", self.icon_b64)
-        if with_reply:
-            selector_ok = RETWEET_WITH_REPLY_SELECTOR
-        else:
-            selector_ok = RETWEET_SELECTOR
+        selector_ok = RETWEET_SELECTOR
         self.driver.execute_script(
             f'''{selector_ok}.innerHTML += `{template}`'''
         )
