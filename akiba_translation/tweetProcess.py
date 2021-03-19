@@ -66,7 +66,8 @@ class Processor:
 
     def save_screenshot(self) -> str:
         """
-        :return: 截图名称
+        保存截图
+        :return: 截图名称（带后缀名）
         """
         # modify tweet
         self.driver.set_window_size(640, self.driver.execute_script(
@@ -188,7 +189,6 @@ class Processor:
                 return top;
                 '''
         ) > 0:
-            # logger.info("scroll_sleep")
             time.sleep(0.5)
         self.driver.execute_script('''try{
             new_element = document.createElement("style");
