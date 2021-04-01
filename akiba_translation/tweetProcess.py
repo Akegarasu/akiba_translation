@@ -21,6 +21,7 @@ class Processor:
         self.html_template: str = cfg["template"]["html"]
         self.icon_b64: str = cfg["template"]["icon_b64"]
         self.text: dict = cfg["text"]
+        self.is_long_tweet: bool = False
 
         self.init_argument()
         self.driver = webdriver.Chrome(chrome_options=self.options)
@@ -51,7 +52,7 @@ class Processor:
         self.driver.set_window_size(640, self.driver.execute_script(
             '''return document.querySelector("section").getBoundingClientRect().bottom'''
         ))
-        self.modify_tweet(4000)
+        self.modify_tweet(2000)
         # 加载 twemoji
         self.driver.execute_script(LOAD_TWEMOJI_JS)
 
@@ -80,7 +81,10 @@ class Processor:
         保存截图
         :return: 截图名称（带后缀名）
         """
-        self.modify_tweet(4000)
+        if self.is_long_tweet:
+            self.modify_tweet(4000)
+        else:
+            self.modify_tweet(2000)
         # save and clip tweet image
         clip_info = self.driver.execute_script(
             '''return document.querySelector("article .css-1dbjc4n.r-1r5su4o").getBoundingClientRect();'''
@@ -124,6 +128,9 @@ class Processor:
         self.driver.execute_script('''
             document.nodes = [...document.querySelectorAll("article")];
             ''')
+        if len(self.text["tweet"]) >= 5:
+            self.is_long_tweet = True
+            self.modify_tweet(4000)
         for i in range(len(self.text["tweet"])):
             src = self.text["tweet"][i]
             text_ok = self.process_text(src)
