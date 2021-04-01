@@ -9,7 +9,7 @@ from PIL import Image
 
 from config import PROXY
 from utils.template import RETWEET_TEMP
-from utils.twemoji import EMOJI_HTML, TWEET_EMOJI_JS
+from utils.twemoji import EMOJI_HTML, LOAD_TWEMOJI_JS, TWEET_EMOJI_JS
 from utils.selector import TWEET_SELECTOR, RETWEET_SELECTOR
 
 
@@ -26,7 +26,7 @@ class Processor:
         self.driver = webdriver.Chrome(chrome_options=self.options)
         self.init_webdriver()
 
-    def init_argument(self):
+    def init_argument(self) -> None:
         argument_list = [
             "--headless",
             "--no-sandbox",
@@ -39,14 +39,25 @@ class Processor:
         for arg in argument_list:
             self.options.add_argument(arg)
 
-    def init_webdriver(self):
+    def init_webdriver(self) -> None:
         self.driver.delete_all_cookies()
+
+    def process_prepare(self) -> None:
+        self.driver.get(self.link)
+        # 等待 article 加载完毕
+        WebDriverWait(self.driver, 60, 0.1).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "article")))
+        # modify tweet
+        self.driver.set_window_size(640, self.driver.execute_script(
+            '''return document.querySelector("section").getBoundingClientRect().bottom'''
+        ))
+        self.modify_tweet(4000)
+        # 加载 twemoji
+        self.driver.execute_script(LOAD_TWEMOJI_JS)
 
     def process_tweet(self) -> str:
         img_name = ""
-        self.driver.get(self.link)
-        WebDriverWait(self.driver, 60, 0.1).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "article")))
+        self.process_prepare()
         try:
             if self.type == "single":
                 img_name = self.process_tweet_single()
@@ -69,21 +80,19 @@ class Processor:
         保存截图
         :return: 截图名称（带后缀名）
         """
-        # modify tweet
-        self.driver.set_window_size(640, self.driver.execute_script(
-            '''return document.querySelector("section").getBoundingClientRect().bottom'''
-        ))
-        self.modify_tweet()
+        self.modify_tweet(4000)
         # save and clip tweet image
         clip_info = self.driver.execute_script(
             '''return document.querySelector("article .css-1dbjc4n.r-1r5su4o").getBoundingClientRect();'''
         )
+        height = int(clip_info["bottom"] + 14)
         self.driver.save_screenshot(
             f"cache_image.png"
         )
-        img = Image.open("cache_image.png")
-        crop = img.crop((0, 0, 640, int(clip_info["bottom"] + 14)))
+        height = int(clip_info["bottom"] + 14)
         img_name = f"{str(int(time.time()))}_a.png"
+        img = Image.open("cache_image.png")
+        crop = img.crop((0, 0, 640, height))
         crop.save("./imgs/" + img_name)
         return img_name
 
@@ -113,6 +122,9 @@ class Processor:
 
     def process_tweet_reply(self) -> str:
         assert isinstance(self.text["tweet"], list)
+        self.driver.execute_script('''
+            document.nodes = [...document.querySelectorAll("article")];
+            ''')
         for i in range(len(self.text["tweet"])):
             src = self.text["tweet"][i]
             text_ok = self.process_text(src)
@@ -128,8 +140,7 @@ class Processor:
                 template = template.replace("{KT_IMG}", self.icon_b64)
             self.driver.execute_script(
                 f'''
-                let nodes = [...document.querySelectorAll("article")];
-                nodes[{i}].querySelectorAll('[dir="auto"]')[{selector_count}].innerHTML += `{template}`;'''
+                document.nodes[{i}].querySelectorAll('[dir="auto"]')[{selector_count}].innerHTML += `{template}`;'''
             )
 
         img_name = self.save_screenshot()
@@ -178,7 +189,7 @@ class Processor:
                 cache = re.sub(i, f"<span class='link'>{i}</span>", cache, count=1)
         return cache
 
-    def modify_tweet(self) -> None:
+    def modify_tweet(self, height: int) -> None:
         while self.driver.execute_script(
                 '''
                 let top=0;
@@ -209,8 +220,7 @@ class Processor:
             document.body.scrollIntoView();
             }catch{}''')
 
-        self.driver.set_window_size(640, 2000)
-        # time.sleep(3)
+        self.driver.set_window_size(640, height)
         self.driver.execute_script('''try{
                     document.body.scrollIntoView();
                     }catch{}''')
