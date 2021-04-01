@@ -85,7 +85,6 @@ class Processor:
         clip_info = self.driver.execute_script(
             '''return document.querySelector("article .css-1dbjc4n.r-1r5su4o").getBoundingClientRect();'''
         )
-        height = int(clip_info["bottom"] + 14)
         self.driver.save_screenshot(
             f"cache_image.png"
         )
