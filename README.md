@@ -66,8 +66,8 @@ POST 的内容如下所示
         "template_name": "模板名称",
         "link": "推文链接",
         "text": {
-            "tweet": "推特的烤制内容",
-            "retweet": "回复推的烤制内容" # 仅在 type 为 retweet 时需要该字段
+            "tweet": "推特的烤制内容", # 回复推中该值为一个 list ，如 ["第一个翻译","第二个翻译"...]
+            "retweet": "回复推的烤制内容" # 仅在 type 包含 retweet 时需要该字段
         },
         "type": "烤推类型" # single，retweet，reply，retweet|reply 四种
 }
