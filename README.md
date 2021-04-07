@@ -49,24 +49,6 @@
 - `{T}` 会被替换为烤推文本
 
 
-
-**以下是旧版添加模板方法，现已过时，但仍然可用**
-
-部署好后修改utils/template.py中的内容，在`TEMP`中加入你的模板
-每一个模板都是一个`dict`，需要有`html`、`icon_b64`两个字段。
-程序为 html 提供了两个魔术变量
-
-- `{KT_IMG}` 会被替换为烤推标识的base64
-- `{T}` 会被替换为烤推文本
-
-本项目已经提供了一个名为`akiba_temp`的模板，可以参考该模板进行修改。
-```python3
-"akiba_temp": {
-    "html": '''你的烤推html模板（插入模板）''',
-    "icon_b64":  "烤推标识的图片base64"   
-}
-```
-
 ### 第三步：进行烤制
 
 以下是 webapi 提供的接口
@@ -87,7 +69,7 @@ POST 的内容如下所示
             "tweet": "推特的烤制内容",
             "retweet": "回复推的烤制内容" # 仅在 type 为 retweet 时需要该字段
         },
-        "type": "烤推类型" # single，retweet，reply三种
+        "type": "烤推类型" # single，retweet，reply，retweet|reply 四种
 }
 ```
 
