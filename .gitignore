@@ -134,3 +134,4 @@ akiba_translation/cache_image.png
 akiba_translation/test.py
 akiba_translation/newtest.py
 .idea
+.vscode/settings.json
