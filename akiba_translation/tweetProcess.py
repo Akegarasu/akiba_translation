@@ -128,16 +128,19 @@ class Processor:
         self.driver.execute_script('''
             document.nodes = [...document.querySelectorAll("article")];
             ''')
+
         if len(self.text["tweet"]) >= 5:
             self.is_long_tweet = True
             self.modify_tweet(4000)
+
         for i in range(len(self.text["tweet"])):
             src = self.text["tweet"][i]
             text_ok = self.process_text(src)
-
+            node_controller = ""
             if i == len(self.text["tweet"]) - 1:
                 selector_count = 3
                 template = self.html_template.replace("{T}", text_ok)
+                node_controller = ".parentNode"
             else:
                 selector_count = 4
                 template = RETWEET_TEMP.replace("{T}", text_ok)
@@ -146,7 +149,7 @@ class Processor:
                 template = template.replace("{KT_IMG}", self.icon_b64)
             self.driver.execute_script(
                 f'''
-                document.nodes[{i}].querySelectorAll('[dir="auto"]')[{selector_count}].innerHTML += `{template}`;'''
+                document.nodes[{i}].querySelectorAll('[dir="auto"]')[{selector_count}]{node_controller}.innerHTML += `{template}`;'''
             )
 
         img_name = self.save_screenshot()
@@ -164,7 +167,10 @@ class Processor:
                                        EMOJI_HTML.replace("{EMOJI}", eve), emoji_parsed_html, count=1)
         emoji_pattern = re.compile(u"[\U00010000-\U0010ffff]")
         text_emoji_clear = emoji_pattern.sub("", emoji_parsed_html)
-        return text_emoji_clear
+        return self.unescape_text(text_emoji_clear)
+
+    def unescape_text(self, src) -> str:
+        return src.replace("`", "\`").replace("´", "\´").replace("(", "\(").replace(")", "\)")
 
     def process_text(self, src) -> str:
         src = self.process_link(src)
