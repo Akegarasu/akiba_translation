@@ -28,6 +28,11 @@ class Processor:
         self.init_webdriver()
 
     def init_argument(self) -> None:
+        """
+        构造并添加 webdriver 启动参数
+        可选 proxy
+        :return: None
+        """
         argument_list = [
             "--headless",
             "--no-sandbox",
@@ -41,9 +46,21 @@ class Processor:
             self.options.add_argument(arg)
 
     def init_webdriver(self) -> None:
+        """
+        初始化 webdriver
+        :return: None
+        """
         self.driver.delete_all_cookies()
 
     def process_prepare(self) -> None:
+        """
+        为烤推做准备
+            - 访问网页
+            - 等待加载完毕
+            - 修改窗口大小以便加载足够的推特
+            - 加载 twemoji 到 documents
+        :return: None
+        """
         self.driver.get(self.link)
         # 等待 article 加载完毕
         WebDriverWait(self.driver, 60, 0.1).until(
@@ -116,6 +133,10 @@ class Processor:
         return img_name
 
     def process_tweet_retweet(self) -> None:
+        """
+        烤制转推
+        :return: 截图名称
+        """
         text_ok = self.process_text(self.text["retweet"])
         template = RETWEET_TEMP.replace("{T}", text_ok).replace("{KT_IMG}", self.icon_b64)
         selector_ok = RETWEET_SELECTOR
@@ -124,6 +145,10 @@ class Processor:
         )
 
     def process_tweet_reply(self) -> str:
+        """
+        烤制回复推
+        :return: 截图名称
+        """
         assert isinstance(self.text["tweet"], list)
         self.driver.execute_script('''
             document.nodes = [...document.querySelectorAll("article")];
@@ -156,6 +181,11 @@ class Processor:
         return img_name
 
     def process_emoji(self, src) -> str:
+        """
+        :param src: 烤推文本
+        处理 emoji ，将 emoji 修改为推特风格
+        :return: 截图名称
+        """
         js = TWEET_EMOJI_JS.replace("{EMOJI_HTML}", src)
         emoji_parsed_html = self.driver.execute_script(js)
         emoji_list = re.findall(
@@ -170,6 +200,10 @@ class Processor:
         return self.unescape_text(text_emoji_clear)
 
     def unescape_text(self, src) -> str:
+        """
+        :param src: 烤推文本
+        :return: 转义特殊字符后的烤推文本
+        """
         return src.replace("`", "\`").replace("´", "\´").replace("(", "\(").replace(")", "\)")
 
     def process_text(self, src) -> str:
