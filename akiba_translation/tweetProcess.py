@@ -199,13 +199,6 @@ class Processor:
         text_emoji_clear = emoji_pattern.sub("", emoji_parsed_html)
         return self.unescape_text(text_emoji_clear)
 
-    def unescape_text(self, src) -> str:
-        """
-        :param src: 烤推文本
-        :return: 转义特殊字符后的烤推文本
-        """
-        return src.replace("`", "\`").replace("´", "\´").replace("(", "\(").replace(")", "\)")
-
     def process_text(self, src) -> str:
         src = self.process_link(src)
         if "\r\n" in src:
@@ -215,6 +208,14 @@ class Processor:
         else:
             ok = src
         return self.process_emoji(ok)
+
+    @staticmethod
+    def unescape_text(src) -> str:
+        """
+        :param src: 烤推文本
+        :return: 转义特殊字符后的烤推文本
+        """
+        return src.replace("`", "\`").replace("´", "\´").replace("(", "\(").replace(")", "\)")
 
     @staticmethod
     def process_link(src: str) -> str:
