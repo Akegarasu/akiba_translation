@@ -15,29 +15,33 @@ TEMPLATE: dict = {
 }
 
 
-def load_html(path) -> Optional[str]:
+def load_html(path) -> str:
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             temp_html = f.readlines()
         ok = "".join(temp_html).replace("\n", "")
         return ok
+    else:
+        return TEMPLATE["default"]["html"]
 
 
-def img_to_base64(path) -> Optional[str]:
+def img_to_base64(path) -> str:
     if os.path.exists(path):
         with open(path, 'rb') as f:
             image = f.read()
             ok = "data:image/png;base64," + str(base64.b64encode(image), encoding='utf-8')
             return ok
+    else:
+        return ""
 
 
 def load_template() -> Dict[str, Dict]:
     global TEMPLATE
     dirs = os.listdir("./templates")
     for i in dirs:
-        d = "./templates/" + i
-        html = load_html(d + "/index.html")
-        icon_b64 = img_to_base64(d + "/icon.png")
+        d = f"./templates/{i}/"
+        html = load_html(d + "index.html")
+        icon_b64 = img_to_base64(d + "icon.png")
         TEMPLATE[i] = {
             "html": html,
             "icon_b64": icon_b64
