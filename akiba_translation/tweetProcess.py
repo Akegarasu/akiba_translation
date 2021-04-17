@@ -207,7 +207,7 @@ class Processor:
             ok = src.replace("\n", "<br>")
         else:
             ok = src
-        return self.process_emoji(ok)
+        return self.process_emoji(self.unescape_text(ok))
 
     @staticmethod
     def unescape_text(src) -> str:
@@ -215,7 +215,8 @@ class Processor:
         :param src: 烤推文本
         :return: 转义特殊字符后的烤推文本
         """
-        return src.replace("`", "\`").replace("´", "\´").replace("(", "\(").replace(")", "\)")
+        return src.replace("`", "\`").replace("´", "\´") \
+            .replace("(", "\(").replace(")", "\)").replace('"', '\"')
 
     @staticmethod
     def process_link(src: str) -> str:
