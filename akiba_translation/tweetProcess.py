@@ -66,10 +66,10 @@ class Processor:
         WebDriverWait(self.driver, 60, 0.1).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "article")))
         # modify tweet
-        self.driver.set_window_size(640, self.driver.execute_script(
+        self.driver.set_window_size(1200, self.driver.execute_script(
             '''return document.querySelector("section").getBoundingClientRect().bottom'''
         ))
-        self.modify_tweet(2000)
+        # self.modify_tweet(2000)
         # 加载 twemoji
         self.driver.execute_script(LOAD_TWEMOJI_JS)
 
@@ -268,7 +268,7 @@ class Processor:
             document.body.scrollIntoView();
             }catch{}''')
 
-        self.driver.set_window_size(640, height)
+        self.driver.set_window_size(1200, height)
         self.driver.execute_script('''try{
                     document.body.scrollIntoView();
                     }catch{}''')
