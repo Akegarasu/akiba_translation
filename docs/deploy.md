@@ -70,7 +70,6 @@ git clone https://github.com/Akegarasu/akiba_translation.git
 pip3 install pipenv
 cd akiba_translation
 python3 -m pipenv run pip install -r requirements.txt
-python3 -m pipenv run pip install gunicorn
 ```
 
 #### 启动主程序
