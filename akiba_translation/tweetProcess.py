@@ -164,6 +164,9 @@ class Processor:
             node_controller = ""
             if i == len(self.text["tweet"]) - 1:
                 selector_count = 3
+                reply_mark = self.driver.execute_script(f'''return document.nodes[{i}].querySelectorAll('[dir="auto"]')[2].innerHTML''')
+                if "@" not in reply_mark:
+                    selector_count = 2
                 template = self.html_template.replace("{T}", text_ok)
                 node_controller = ".parentNode"
             else:
